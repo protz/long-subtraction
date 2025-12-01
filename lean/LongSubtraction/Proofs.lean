@@ -15,17 +15,25 @@ def toNat (x: BigInt) :=
   let x3: Nat := x.val[3]
   x0 + x1 * 2^64 + x2 * 2^(64*2) + x3 * 2^(64*3)
 
+@[progress]
 theorem sub_borrow_spec (b0: U8) (src1 src2 dst: U64) (h: b0.val = 0 ∨ b0.val = 1):
   ∃ b1 r, sub_borrow b0 src1 src2 dst = ok (b1, r) ∧
-  r.val - b1 * (2 ^ 64) = src1.val - src2.val - b0.val
+  r.val - b1 * (2 ^ 64) = src1.val - src2.val - b0.val ∧
+  (b1.val = 0 ∨ b1.val = 1)
 := by
   unfold sub_borrow
   progress* 
-  <;> exists i1, tmp2
-  <;> simp
-  -- how do I know what to simp here?
-  <;> simp only [core.num.U64.wrapping_sub] at *
-  -- shouldn't this be automatic?
-  <;> rewrite [tmp2_post, tmp1_post, i1_post, i_post]
-  -- why is this not working? ;-)
+  <;> simp_all
+  <;> simp_scalar
   scalar_tac
+
+theorem sub_spec
+  (b0 : U8) (src1 : Array U64 4#usize) (src2 : Array U64 4#usize)
+  (dst : Array U64 4#usize) (h: b0.val = 0 ∨ b0.val = 1):
+  ∃ b1 r, sub b0 src1 src2 dst = ok (b1, r) ∧
+  toNat r - 2 ^ (64 * 4) * b1.val = toNat src1 - toNat src2 - b0.val
+:= by
+  unfold sub
+  progress*
+  simp_all
+  simp_scalar
