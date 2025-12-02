@@ -18,7 +18,7 @@ def toNat (x: BigInt) :=
 @[progress]
 theorem sub_borrow_spec (b0: U8) (src1 src2 dst: U64) (h: b0.val = 0 ∨ b0.val = 1):
   ∃ b1 r, sub_borrow b0 src1 src2 dst = ok (b1, r) ∧
-  r.val - b1 * (2 ^ 64) = src1.val - src2.val - b0.val ∧
+  r.val - b1 * (2 ^ 64 * 4) = src1.val - src2.val - b0.val ∧
   (b1.val = 0 ∨ b1.val = 1)
 := by
   unfold sub_borrow
@@ -35,5 +35,8 @@ theorem sub_spec
 := by
   unfold sub
   progress*
-  simp_all
-  simp_scalar
+  simp
+  /- calc -/
+  /-   dst4.val - b4 * (2 ^ 64) = -/ 
+  /- simp_all -/
+  /- simp_scalar -/
