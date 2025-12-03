@@ -2,8 +2,9 @@ type BigInt = [u64; 4];
 
 type Borrow = u8;
 
+/* We implement this primitive operation by hand, although in practice, at least on x86_64, one
+ * would use the compiler intrinsic _subborrow_u64 from core::arch::x86_64 */
 fn sub_borrow(b0: Borrow, src1: u64, src2: u64, dst: &mut u64) -> Borrow {
-    // tmp = src1 - b_in
     let tmp1 = src1.wrapping_sub(b0 as u64);
     let b1: Borrow = if tmp1 > src1 { 1 } else { 0 };
     let tmp2 = tmp1.wrapping_sub(src2);
@@ -12,6 +13,7 @@ fn sub_borrow(b0: Borrow, src1: u64, src2: u64, dst: &mut u64) -> Borrow {
     b1 + b2
 }
 
+/* We want to prove that `sub`, below, computes a subtraction */
 fn sub(b0: Borrow, src1: &BigInt, src2: &BigInt, dst: &mut BigInt) -> Borrow {
     let b1 = sub_borrow(b0, src1[0], src2[0], &mut dst[0]);
     let b2 = sub_borrow(b1, src1[1], src2[1], &mut dst[1]);
